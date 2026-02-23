@@ -1,0 +1,82 @@
+# =============================================================
+# Docker Compose — Serveurs MCP prêts à l'emploi
+# Utilise : Sofias-ai/mcp-sharepoint (pip install mcp-sharepoint-server)
+#           DEmodoriGatsuO/sharepoint-mcp (backup)
+#
+# Usage : docker compose -f docker-compose.yml -f docker-compose.mcp.yml up
+# =============================================================
+
+services:
+
+  # ─────────────────────────────────────────────────────────────
+    # MCP SharePoint — Sofias-ai/mcp-sharepoint
+      # Source : https://github.com/Sofias-ai/mcp-sharepoint
+        # 10 outils : List/Get/Upload/Update/Delete docs + folders + search
+          # ─────────────────────────────────────────────────────────────
+            mcp-sharepoint:
+                image: python:3.12-slim
+                    container_name: rag-mcp-sharepoint
+                        restart: unless-stopped
+                            working_dir: /app
+                                command: >
+                                      sh -c "pip install --quiet mcp-sharepoint-server &&
+                                                   python -m mcp_sharepoint"
+                                                       environment:
+                                                             # ── Identifiants Azure AD ──────────────────────────────
+                                                                   SHP_ID_APP: ${SHAREPOINT_CLIENT_ID}
+                                                                         SHP_ID_APP_SECRET: ${SHAREPOINT_CLIENT_SECRET}
+                                                                               SHP_TENANT_ID: ${SHAREPOINT_TENANT_ID}
+                                                                                     # ── Site SharePoint ────────────────────────────────────
+                                                                                           SHP_SITE_URL: ${SHAREPOINT_SITE_URL}
+                                                                                                 SHP_DOC_LIBRARY: ${SHAREPOINT_DOC_LIBRARY:-Shared Documents}
+                                                                                                       # ── Options avancées ──────────────────────────────────
+                                                                                                             SHP_MAX_DEPTH: ${SHP_MAX_DEPTH:-15}
+                                                                                                                   SHP_MAX_FOLDERS_PER_LEVEL: ${SHP_MAX_FOLDERS_PER_LEVEL:-100}
+                                                                                                                         SHP_LEVEL_DELAY: ${SHP_LEVEL_DELAY:-0.5}
+                                                                                                                             ports:
+                                                                                                                                   - "8811:8811"
+                                                                                                                                       healthcheck:
+                                                                                                                                             test: ["CMD", "python", "-c", "import mcp_sharepoint; print('ok')"]
+                                                                                                                                                   interval: 30s
+                                                                                                                                                         timeout: 10s
+                                                                                                                                                               retries: 3
+                                                                                                                                                                     start_period: 60s
+                                                                                                                                                                         networks:
+                                                                                                                                                                               - rag-network
+                                                                                                                                                                                   labels:
+                                                                                                                                                                                         - "traefik.enable=false"
+                                                                                                                                                                                               - "com.rag.service=mcp-sharepoint"
+                                                                                                                                                                                                     - "com.rag.description=MCP SharePoint server (Sofias-ai)"
+                                                                                                                                                                                                     
+                                                                                                                                                                                                       # ─────────────────────────────────────────────────────────────
+                                                                                                                                                                                                         # MCP SharePoint Proxy — expose le serveur MCP via HTTP/SSE
+                                                                                                                                                                                                           # Permet au backend FastAPI de l'appeler en HTTP standard
+                                                                                                                                                                                                             # ─────────────────────────────────────────────────────────────
+                                                                                                                                                                                                               mcp-sharepoint-proxy:
+                                                                                                                                                                                                                   image: python:3.12-slim
+                                                                                                                                                                                                                       container_name: rag-mcp-sharepoint-proxy
+                                                                                                                                                                                                                           restart: unless-stopped
+                                                                                                                                                                                                                               working_dir: /app
+                                                                                                                                                                                                                                   command: >
+                                                                                                                                                                                                                                         sh -c "pip install --quiet fastapi uvicorn httpx mcp &&
+                                                                                                                                                                                                                                                      python /app/mcp_proxy.py"
+                                                                                                                                                                                                                                                          volumes:
+                                                                                                                                                                                                                                                                - ./mcp_proxy.py:/app/mcp_proxy.py:ro
+                                                                                                                                                                                                                                                                    environment:
+                                                                                                                                                                                                                                                                          MCP_SHAREPOINT_HOST: mcp-sharepoint
+                                                                                                                                                                                                                                                                                MCP_SHAREPOINT_PORT: "8811"
+                                                                                                                                                                                                                                                                                      PROXY_PORT: "8812"
+                                                                                                                                                                                                                                                                                          ports:
+                                                                                                                                                                                                                                                                                                - "8812:8812"
+                                                                                                                                                                                                                                                                                                    depends_on:
+                                                                                                                                                                                                                                                                                                          - mcp-sharepoint
+                                                                                                                                                                                                                                                                                                              networks:
+                                                                                                                                                                                                                                                                                                                    - rag-network
+                                                                                                                                                                                                                                                                                                                        labels:
+                                                                                                                                                                                                                                                                                                                              - "com.rag.service=mcp-proxy"
+                                                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                              networks:
+                                                                                                                                                                                                                                                                                                                                rag-network:
+                                                                                                                                                                                                                                                                                                                                    external: true
+                                                                                                                                                                                                                                                                                                                                        name: rag-expert-chatbot_rag-network
+                                                                                                                                                                                                                                                                                                                                        
