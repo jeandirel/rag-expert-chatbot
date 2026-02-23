@@ -1,0 +1,119 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.16",
+    "version": "1.0.0",
+    "id": "00000000-0000-0000-0000-000000000001",
+    "packageName": "com.yourcompany.rag-expert-chatbot",
+    "developer": {
+          "name": "Votre Entreprise",
+          "websiteUrl": "https://yourcompany.com",
+          "privacyUrl": "https://yourcompany.com/privacy",
+          "termsOfUseUrl": "https://yourcompany.com/terms"
+    },
+    "icons": {
+          "color": "color.png",
+          "outline": "outline.png"
+    },
+    "name": {
+          "short": "RAG Expert",
+          "full": "Assistant RAG Expert - Documentation Metier"
+    },
+    "description": {
+          "short": "Interrogez votre documentation metier avec l'IA",
+          "full": "Assistant intelligent base sur RAG (Retrieval-Augmented Generation) pour interroger votre documentation SharePoint. Posez des questions en langage naturel et obtenez des reponses precises avec les sources correspondantes."
+    },
+    "accentColor": "#3B82F6",
+    "bots": [
+          {
+                  "botId": "00000000-0000-0000-0000-000000000002",
+                  "scopes": ["personal", "team", "groupchat"],
+                  "supportsFiles": false,
+                  "isNotificationOnly": false,
+                  "supportsCalling": false,
+                  "supportsVideo": false,
+                  "commandLists": [
+                            {
+                                        "scopes": ["personal", "team", "groupchat"],
+                                        "commands": [
+                                                      {
+                                                                      "title": "aide",
+                                                                      "description": "Afficher l'aide et les commandes disponibles"
+                                                      },
+                                                      {
+                                                                      "title": "nouvelle",
+                                                                      "description": "Demarrer une nouvelle conversation"
+                                                      },
+                                                      {
+                                                                      "title": "stats",
+                                                                      "description": "Afficher les statistiques de la documentation"
+                                                      },
+                                                      {
+                                                                      "title": "recherche",
+                                                                      "description": "Rechercher dans la documentation"
+                                                      }
+                                        ]
+                            }
+                  ]
+          }
+    ],
+    "staticTabs": [
+          {
+                  "entityId": "chat",
+                  "name": "Chat Expert",
+                  "contentUrl": "https://YOUR_FRONTEND_URL/teams-tab",
+                  "websiteUrl": "https://YOUR_FRONTEND_URL",
+                  "scopes": ["personal"]
+          },
+          {
+                  "entityId": "admin",
+                  "name": "Administration",
+                  "contentUrl": "https://YOUR_FRONTEND_URL/admin",
+                  "websiteUrl": "https://YOUR_FRONTEND_URL/admin",
+                  "scopes": ["personal"]
+          }
+    ],
+    "configurableTabs": [
+          {
+                  "configurationUrl": "https://YOUR_FRONTEND_URL/teams-config",
+                  "canUpdateConfiguration": true,
+                  "scopes": ["team", "groupchat"],
+                  "context": [
+                            "channelTab",
+                            "privateChatTab",
+                            "meetingChatTab",
+                            "meetingDetailsTab",
+                            "meetingSidePanel"
+                  ]
+          }
+    ],
+    "permissions": ["identity", "messageTeamMembers"],
+    "validDomains": [
+          "YOUR_FRONTEND_DOMAIN",
+          "YOUR_BACKEND_DOMAIN",
+          "token.botframework.com"
+    ],
+    "webApplicationInfo": {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "resource": "api://YOUR_FRONTEND_DOMAIN/00000000-0000-0000-0000-000000000001"
+    },
+    "authorization": {
+          "permissions": {
+                  "resourceSpecific": [
+                            {
+                                        "name": "ChannelMessage.Read.Group",
+                                        "type": "Application"
+                            },
+                            {
+                                        "name": "ChatMessage.Read.Chat",
+                                        "type": "Application"
+                            }
+                  ]
+          }
+    },
+    "defaultInstallScope": "personal",
+    "defaultGroupCapability": {
+          "meetings": "tab",
+          "team": "bot",
+          "groupchat": "bot"
+    }
+}
